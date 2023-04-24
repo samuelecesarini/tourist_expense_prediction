@@ -1,0 +1,167 @@
+# Importing libraries
+library(RCurl) # for downloading the iris CSV file
+library(randomForest)
+library(caret)
+library(readxl)
+library(httr)
+#qui carico la banca dati e la rinomino
+random_Forest19  <- read.csv(text = getURL("https://raw.githubusercontent.com/samuelecesarini/tourist_expense_prediction/main/dummy_db.csv"), quote="")
+#rinomino le colonne
+colnames(random_Forest19) <- c("ID",
+                               "COEV",
+                               "ln_Spesa_media_giornaliera_viaggio",
+                               "ln_Spesa_media_per_viaggio",
+                               "ln_durata_viaggio_numero_notti",
+                               "Spesa_media_giornaliera_viaggio",
+                               "Spesa_media_per_viaggio",
+                               "durata_viaggio_numero_notti",
+                               "sessoFemmine",
+                               "sessoMaschi",
+                               "classi_eta.minore_14.anni",
+                               "classi_eta.maggiore_75.anni",
+                               "classi_eta15.24.anni",
+                               "classi_eta25.34.anni",
+                               "classi_eta35.44.anni",
+                               "classi_eta45.54.anni",
+                               "classi_eta55.64.anni",
+                               "classi_eta65.74.anni",
+                               "stato_civileCelibeNubile",
+                               "stato_civileConiugato",
+                               "stato_civileSeparato.Divorziato",
+                               "stato_civileVedovo",
+                               "paese_nascitaEstero",
+                               "paese_nascitaItalia",
+                               "regione_residenzaAbruzzo",
+                               "regione_residenzaBasilicata",
+                               "regione_residenzaCalabria",
+                               "regione_residenzaCampania",
+                               "regione_residenzaEmilia.Romagna",
+                               "regione_residenzaFriuli.Venezia.Giulia",
+                               "regione_residenzaLazio",
+                               "regione_residenzaLiguria",
+                               "regione_residenzaLombardia",
+                               "regione_residenzaMarche",
+                               "regione_residenzaMolise",
+                               "regione_residenzaPiemonte",
+                               "regione_residenzaPuglia",
+                               "regione_residenzaSardegna",
+                               "regione_residenzaSicilia",
+                               "regione_residenzaToscana",
+                               "regione_residenzaTrentino.A.Adige.Sudtirol",
+                               "regione_residenzaUmbria",
+                               "regione_residenzaValle.d.Aosta.Valle.e.d.Aoste",
+                               "regione_residenzaVeneto",
+                               "titolo_studio_piu_alto_conseguitoDiploma.di.scuola.secondaria.superiore.o.qualifica.professionale",
+                               "titolo_studio_piu_alto_conseguitoDiploma.universitario..ex.scuole.parauniversitarie..laurea..post.laurea",
+                               "titolo_studio_piu_alto_conseguitoLicenza.di.scuola.media..o.avviamento.professionale.",
+                               "titolo_studio_piu_alto_conseguitoNessun.titolo.Licenza.elementare",
+                               "condizione_professionale_oggettiva.eta.non.lavorativa",
+                               "condizione_professionale_oggettivaIn.cerca.di.occupazione",
+                               "condizione_professionale_oggettivaInattivo",
+                               "condizione_professionale_oggettivaOccupato",
+                               "regione_destinazioneAbruzzo",
+                               "regione_destinazioneBasilicata",
+                               "regione_destinazioneCalabria",
+                               "regione_destinazioneCampania",
+                               "regione_destinazioneEmilia.Romagna",
+                               "regione_destinazioneFriuli.Venezia.Giulia",
+                               "regione_destinazioneLazio",
+                               "regione_destinazioneLiguria",
+                               "regione_destinazioneLombardia",
+                               "regione_destinazioneMarche",
+                               "regione_destinazioneMolise",
+                               "regione_destinazionePiemonte",
+                               "regione_destinazionePuglia",
+                               "regione_destinazioneSardegna",
+                               "regione_destinazioneSicilia",
+                               "regione_destinazioneToscana",
+                               "regione_destinazioneTrentino.Alto.Adige.Sudtirol",
+                               "regione_destinazioneUmbria",
+                               "regione_destinazioneValle.d.Aosta.Vallee..d.Aoste",
+                               "regione_destinazioneVeneto",
+                               "mese_inizio_viaggioAgosto",
+                               "mese_inizio_viaggioAprile",
+                               "mese_inizio_viaggioDicembre",
+                               "mese_inizio_viaggioFebbraio",
+                               "mese_inizio_viaggioGennaio",
+                               "mese_inizio_viaggioGiugno",
+                               "mese_inizio_viaggioLuglio",
+                               "mese_inizio_viaggioMaggio",
+                               "mese_inizio_viaggioMarzo",
+                               "mese_inizio_viaggioNovembre",
+                               "mese_inizio_viaggioOttobre",
+                               "mese_inizio_viaggioSettembre",
+                               "motivo_prevalente_vacanzaMotivo.religiosio.pellegrinaggio",
+                               "motivo_prevalente_vacanzaPiacere..svago..vacanza",
+                               "motivo_prevalente_vacanzaTrattamento.di.salute..cura.termale",
+                               "motivo_prevalente_vacanzaVisita.a.parenti.e.o.amici",
+                               "principale_mezzo_trasporto_utilizzatoAereo",
+                               "principale_mezzo_trasporto_utilizzatoAltro",
+                               "principale_mezzo_trasporto_utilizzatoAuto.a.noleggio",
+                               "principale_mezzo_trasporto_utilizzatoAuto.propria..di.parenti.amici",
+                               "principale_mezzo_trasporto_utilizzatoCamper..autocaravan",
+                               "principale_mezzo_trasporto_utilizzatoMoto..Motoscooter",
+                               "principale_mezzo_trasporto_utilizzatoNave..battello..motoscafo",
+                               "principale_mezzo_trasporto_utilizzatoPullman.di.linea",
+                               "principale_mezzo_trasporto_utilizzatoPullman.turistico",
+                               "principale_mezzo_trasporto_utilizzatoTreno",
+                               "principale_alloggio_utilizzatoAbitazione.di.parenti.o.amici.gratuita",
+                               "principale_alloggio_utilizzatoAbitazione.in.affitto",
+                               "principale_alloggio_utilizzatoAbitazione.in.proprieta.o.multiprop.",
+                               "principale_alloggio_utilizzatoAgriturismo",
+                               "principale_alloggio_utilizzatoAlbergo.motel.pensione",
+                               "principale_alloggio_utilizzatoAltra.struttura.collettiva",
+                               "principale_alloggio_utilizzatoAltro.tipo.di.sistemazione.privata",
+                               "principale_alloggio_utilizzatoBarca.in.sito.non.organizzato",
+                               "principale_alloggio_utilizzatoBed.breakfast",
+                               "principale_alloggio_utilizzatoCampeggio",
+                               "principale_alloggio_utilizzatoCampo.lavoro.e.vacanza",
+                               "principale_alloggio_utilizzatoIstituto.religioso",
+                               "principale_alloggio_utilizzatoMezzo.pubblico.di.trasporto",
+                               "principale_alloggio_utilizzatoResidenza.per.cure.fisiche.ed.estetiche",
+                               "principale_alloggio_utilizzatoStanza.in.affitto",
+                               "principale_alloggio_utilizzatoVillaggio.vacanza",
+                               "organizzazione_alloggioNessuna.prenotazione",
+                               "organizzazione_alloggioNon.sa.non.risponde",
+                               "organizzazione_alloggioPrenot..diretta",
+                               "organizzazione_alloggioPrenot..in.agenzia.tour.operator",
+                               "organizzazione_trasportoNessuna.prenotazione",
+                               "organizzazione_trasportoNon.sa.non.risponde",
+                               "organizzazione_trasportoPrenot..diretta",
+                               "organizzazione_trasportoPrenot..in.agenzia.tour.operator",
+                               "numero_componenti_famiglia1",
+                               "numero_componenti_famiglia2",
+                               "numero_componenti_famiglia3",
+                               "numero_componenti_famiglia4",
+                               "numero_componenti_famiglia5.e.piu..partecipanti",
+                               "tipo_attivita_principaleAltro.motivo.volontariato.shopping.hobby.eventi.sportivi.visita.a.parchi.divertimento.zoo.acquario.etc",
+                               "tipo_attivita_principaleBellezze.naturali",
+                               "tipo_attivita_principaleCultura",
+                               "tipo_attivita_principaleDivertimento..riposo.o.relax",
+                               "tipo_attivita_principaleGastronomia..folklore.spettacoli",
+                               "tipo_attivita_principalenon.specificata",
+                               "tipo_attivita_principalePratica.di.sport..settimana.bianca..trekking..escursionismo..caccia.o.pesca..scuola.di.vela..rafting..equitazione...ballo",
+                               "tipo_attivita_principaleStudio.formazione",
+                               "tipo_attivita_principaleTrattamenti.di.salute.benessere.beauty.farm.spa")
+                               
+random_Forest19 <- random_Forest19[,1:136]
+#Creare un dataset di train estratto casualmente
+set.seed(123) # per riproducibilità
+# Creare un indice di righe casuali
+indici <- sample(1:nrow(random_Forest19), nrow(random_Forest19), replace = FALSE)
+# Dividere il dataset in due parti: 75% e il rimanente
+train <- random_Forest19[indici[1:round(0.75 * nrow(random_Forest19))], ]
+# Creare un dataset di test estratto casualmente (25% del campione)
+test <- random_Forest19[indici[(round(0.75 * nrow(random_Forest19)) + 1):nrow(random_Forest19)], ]
+#senza logaritmo
+train <- train[, c(7:136)]
+test <- test[, c(7:136)]
+write.csv(train, "train.csv")
+write.csv(test, "test.csv")
+train <- read.csv("train.csv", header = TRUE)
+test <- read.csv("test.csv", header = TRUE)
+#modello
+model <- randomForest(Spesa_media_per_viaggio ~ ., data = train, ntree = 500, importance=TRUE, maxnodes = 300, nodesize = 100, mtry = 43)
+
+# Save model to RDS file
+saveRDS(model, "model.rds")
